@@ -1,12 +1,12 @@
 package cityrescue;
 import cityrescue.enums.*;
 
-public class Unit 
+public abstract class Unit 
 {
-	UnitType type;
-	UnitStatus status = UnitStatus.IDLE;
-	int stationId;
-	int unitId;
+	private UnitType type;
+	private UnitStatus status = UnitStatus.IDLE;
+	private int stationId;
+	private int unitId;
 	
 	public Unit(UnitType t, int sId, int uId)
 	{
@@ -14,4 +14,24 @@ public class Unit
 		stationId = sId;
 		unitId = uId;
 	}
+	
+	public int getUnitId() 
+	{
+        return unitId;
+    }
+	
+	public int getStationId() 
+	{
+        return stationId;
+    }
+	
+	public UnitStatus getStatus()
+	{
+		return status;
+	}
+
+    public UnitType getType() 
+    {
+        return type;
+    }
 }
