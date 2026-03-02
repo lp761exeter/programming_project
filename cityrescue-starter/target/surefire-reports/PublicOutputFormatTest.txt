@@ -1,0 +1,25 @@
+-------------------------------------------------------------------------------
+Test set: PublicOutputFormatTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 0.082 s <<< FAILURE! -- in PublicOutputFormatTest
+PublicOutputFormatTest.getStatus_containsRequiredHeadings -- Time elapsed: 0.046 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+	at PublicOutputFormatTest.getStatus_containsRequiredHeadings(PublicOutputFormatTest.java:21)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+PublicOutputFormatTest.viewUnit_and_viewIncident_haveStablePrefixes -- Time elapsed: 0.003 s <<< ERROR!
+cityrescue.exceptions.IDNotRecognisedException: Station ID not found
+	at cityrescue.CityRescueImpl.addUnit(CityRescueImpl.java:196)
+	at PublicOutputFormatTest.viewUnit_and_viewIncident_haveStablePrefixes(PublicOutputFormatTest.java:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+

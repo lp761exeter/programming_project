@@ -1,0 +1,12 @@
+-------------------------------------------------------------------------------
+Test set: PublicTickLifecycleTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.016 s <<< FAILURE! -- in PublicTickLifecycleTest
+PublicTickLifecycleTest.tick_movesUnitTowardIncident_andEventuallyResolves -- Time elapsed: 0.009 s <<< ERROR!
+cityrescue.exceptions.IDNotRecognisedException: Station ID not found
+	at cityrescue.CityRescueImpl.addUnit(CityRescueImpl.java:196)
+	at PublicTickLifecycleTest.tick_movesUnitTowardIncident_andEventuallyResolves(PublicTickLifecycleTest.java:20)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
