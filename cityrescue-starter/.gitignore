@@ -1,2 +1,3 @@
 # Compiled Java files
 *.class
+target/
