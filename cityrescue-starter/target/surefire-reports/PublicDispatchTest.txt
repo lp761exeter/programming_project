@@ -1,12 +1,16 @@
 -------------------------------------------------------------------------------
 Test set: PublicDispatchTest
 -------------------------------------------------------------------------------
+<<<<<<< HEAD
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.017 s <<< FAILURE! -- in PublicDispatchTest
+=======
 Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.014 s <<< FAILURE! -- in PublicDispatchTest
+>>>>>>> origin/main
 PublicDispatchTest.dispatch_assignsClosestEligibleUnit_thenLowestUnitId -- Time elapsed: 0.006 s <<< ERROR!
 cityrescue.exceptions.IDNotRecognisedException: Station ID not found
-	at cityrescue.CityRescueImpl.addUnit(CityRescueImpl.java:196)
+	at cityrescue.CityRescueImpl.addUnit(CityRescueImpl.java:199)
 	at PublicDispatchTest.dispatch_assignsClosestEligibleUnit_thenLowestUnitId(PublicDispatchTest.java:20)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 

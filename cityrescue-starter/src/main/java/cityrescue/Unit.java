@@ -23,9 +23,47 @@ public abstract class Unit
 		this.workRemaining = 0;
 
 	}
+
+	// abstract methods
 	public abstract boolean canHandle(IncidentType type);
 	public abstract int getTicksToResolve(int severity);
 
+	// methods
+
+	public void assignIncident(int incidentId)
+	{
+		this.incidentId = incidentId;
+		this.status = UnitStatus.EN_ROUTE;
+
+	}
+
+	public void arriveAtScene(int severity)
+	{
+		this.status = UnitStatus.AT_SCENE;
+		this.workRemaining = getTicksToResolve(severity);
+	}
+
+	public void workTick()
+	{
+		if(workRemaining > 0)
+		{
+			workRemaining--;
+		}
+	}
+
+	public boolean workFinished()
+	{
+		return workRemaining == 0;
+	}
+
+	public void clearIncident()
+	{
+		this.incidentId = -1;
+		this.status = UnitStatus.IDLE;
+		this.workRemaining = 0;
+	}
+
+	// getters
 	public int getUnitId() 
 	{
         return unitId;
@@ -61,38 +99,12 @@ public abstract class Unit
 		return incidentId;
 	}
 
-	public void assignIncident(int incidentId)
+	public int getWork()
 	{
-		this.incidentId = incidentId;
-		this.status = UnitStatus.EN_ROUTE;
-
+		return workRemaining;
 	}
 
-	public void arriveAtScene(int severity)
-	{
-		this.status = UnitStatus.AT_SCENE;
-		this.workRemaining = getTicksToResolve(severity);
-	}
-
-	public void workTick()
-	{
-		if(workRemaining > 0)
-		{
-			workRemaining--;
-		}
-	}
-
-	public boolean workFinished()
-	{
-		return workRemaining == 0;
-	}
-
-	public void clearIncident()
-	{
-		this.incidentId = -1;
-		this.status = UnitStatus.IDLE;
-		this.workRemaining = 0;
-	}
+	// setters
 
 	public void setLocation(int x, int y)
 	{

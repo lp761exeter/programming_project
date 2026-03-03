@@ -1,4 +1,30 @@
 -------------------------------------------------------------------------------
 Test set: PublicBasicsTest
 -------------------------------------------------------------------------------
+<<<<<<< HEAD
+Tests run: 3, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.044 s <<< FAILURE! -- in PublicBasicsTest
+PublicBasicsTest.addObstacle_outOfBounds_throws_andStateUnchanged -- Time elapsed: 0.006 s <<< ERROR!
+java.util.MissingFormatArgumentException: Format specifier '%d'
+	at java.base/java.util.Formatter.format(Formatter.java:2688)
+	at java.base/java.util.Formatter.format(Formatter.java:2625)
+	at java.base/java.lang.String.format(String.java:4145)
+	at cityrescue.CityRescueImpl.getStatus(CityRescueImpl.java:471)
+	at PublicBasicsTest.addObstacle_outOfBounds_throws_andStateUnchanged(PublicBasicsTest.java:34)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+PublicBasicsTest.initialise_setsGridSize_andResetsTick -- Time elapsed: 0.021 s <<< ERROR!
+java.util.MissingFormatArgumentException: Format specifier '%d'
+	at java.base/java.util.Formatter.format(Formatter.java:2688)
+	at java.base/java.util.Formatter.format(Formatter.java:2625)
+	at java.base/java.lang.String.format(String.java:4145)
+	at cityrescue.CityRescueImpl.getStatus(CityRescueImpl.java:471)
+	at PublicBasicsTest.initialise_setsGridSize_andResetsTick(PublicBasicsTest.java:21)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+=======
 Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 s -- in PublicBasicsTest
+>>>>>>> origin/main

@@ -23,9 +23,11 @@ public class CityRescueImpl implements CityRescue
 	public int TICK;
 	public int NEXT_STATION_ID;
 	public int NEXT_UNIT_ID;
-	public boolean[][] OBSTACLES;
-	public Map<Integer, Station> STATIONS = new HashMap<Integer, Station>();
-	public Map<Integer, Unit> UNITS = new HashMap<Integer, Unit>();
+	public int NEXT_INCIDENT_ID;
+	public ArrayList<Obstacle> OBSTACLES;
+	public Map<Integer, Station> STATIONS;
+	public Map<Integer, Unit> UNITS;
+	public Map<Integer, Incident> INCIDENTS;
 	
 	// graded methods
 	
@@ -43,7 +45,11 @@ public class CityRescueImpl implements CityRescue
     	TICK = 0;
     	NEXT_STATION_ID = 1;
     	NEXT_UNIT_ID = 1;
-    	OBSTACLES = new boolean[width][height];
+		NEXT_INCIDENT_ID = 1;
+		OBSTACLES = new ArrayList<Obstacle>();
+    	STATIONS = new HashMap<Integer, Station>();
+		UNITS = new HashMap<Integer, Unit>();
+		INCIDENTS = new HashMap<Integer, Incident>();
     }
     
     /*
@@ -68,10 +74,9 @@ public class CityRescueImpl implements CityRescue
         {
         	throw new InvalidLocationException("x or y is out bounds");
         }
-        else
-        {
-        	OBSTACLES[y][x] = true;
-        }
+        Obstacle obs = new Obstacle(x,y);
+		OBSTACLES.add(obs);
+		MAP.updateGrid();
     }
     
     /*
@@ -80,15 +85,13 @@ public class CityRescueImpl implements CityRescue
      * doesn't matter if there is an obstacle at (x,y), sets the square to empty.
      */
     @Override
-    public void removeObstacle(int x, int y) throws InvalidLocationException {
+    public void removeObstacle(int x, int y) throws InvalidLocationException 
+	{
     	if (x<0 || x>MAP.width || y<0 || y>MAP.height)
         {
         	throw new InvalidLocationException("x or y is out bounds");
         }
-        else
-        {
-        	MAP.grid[y][x]="";
-        }
+        
     }
     
     /*
@@ -316,59 +319,163 @@ public class CityRescueImpl implements CityRescue
     @Override
     public String viewUnit(int unitId) throws IDNotRecognisedException 
     {
+        if (UNITS.containsKey(unitId))
+		{
+			throw new IDNotRecognisedException("Unit ID not found");
+		}
+		Unit unit = UNITS.get(unitId);
+		String type = unit.getType().name();
+		int home = unit.getStationId();
+		int x = unit.getX();
+		int y = unit.getY();
+		String status = unit.getStatus().name();
+		int incident = unit.getIncidentId();
+		int work = unit.getWork();
+		return String.format("U#%d TYPE=%s HOME=%d LOC=(%d,%d) STATUS=%s INCIDENT=%d WORK=%d",unitId,type,home,x,y,status,incident,work);
+    }
+
+    @Override
+    public int reportIncident(IncidentType type, int severity, int x, int y) throws InvalidSeverityException, InvalidLocationException 
+	{
+        if (type==null)
+		{
+			throw new InvalidSeverityException("Type cannot be null");
+		}
+		if (severity<1 || severity>5)
+		{
+			throw new InvalidSeverityException("Severity must be 1 to 5 inclusive");
+		}
+		if (x<0 || x>MAP.getWidth() || y<0 || y>MAP.getHeight())
+		{
+			throw new InvalidLocationException("X and Y cannot be out of bounds");
+		}
+
+		Incident inc = new Incident(NEXT_INCIDENT_ID, type, severity, x, y);
+		INCIDENTS.put(NEXT_INCIDENT_ID, inc);
+		NEXT_INCIDENT_ID++;
+		return NEXT_INCIDENT_ID-1;
+    }
+
+    @Override
+    public void cancelIncident(int incidentId) throws IDNotRecognisedException, IllegalStateException 
+	{
+		if (!INCIDENTS.containsKey(incidentId))
+		{
+			throw new IDNotRecognisedException("ID not found in INCIDENTS");
+		}
+        Incident inc = INCIDENTS.get(incidentId);
+		if (inc.getStatus()==IncidentStatus.REPORTED)
+		{
+			inc.setStatus(IncidentStatus.CANCELLED);
+		}
+		else if (inc.getStatus()==IncidentStatus.DISPATCHED)
+		{
+			int unitId = inc.getAssignedUnitId();
+			Unit unit = UNITS.get(unitId);
+			unit.clearIncident();
+			inc.setStatus(IncidentStatus.CANCELLED);
+		}
+		else
+		{
+			throw new IllegalStateException("Incident must be REPORTED or DISPATCHED to cancel");
+		}
+    }
+
+    @Override
+    public void escalateIncident(int incidentId, int newSeverity) throws IDNotRecognisedException, InvalidSeverityException, IllegalStateException 
+	{
+		if (newSeverity<1 || newSeverity>5)
+		{
+			throw new InvalidSeverityException("Severity must be 1 to 5 inclusive");
+		}
+		Incident inc = INCIDENTS.get(incidentId);
+		IncidentStatus status = inc.getStatus();
+		if (status==IncidentStatus.RESOLVED || status==IncidentStatus.CANCELLED)
+		{
+			throw new IllegalStateException("Incident cannot be RESOLVED or CANCELLED when escalating");
+		}
+		inc.setSeverity(newSeverity);
+    }
+
+    @Override
+    public int[] getIncidentIds() 
+	{
+        Integer[] temp = INCIDENTS.keySet().toArray(new Integer[0]);
+    	int[] IDs = new int[temp.length];
+    	
+    	for (int i = 0; i < temp.length; i++) 
+    	{
+    	    IDs[i] = temp[i];
+    	}
+    	
+        return IDs;
+    }
+	/*
+	 * I#1 TYPE=FIRE SEV=4 LOC=(3,1) STATUS=IN_PROGRESS UNIT=2
+	 */
+    @Override
+    public String viewIncident(int incidentId) throws IDNotRecognisedException 
+	{
+        if (INCIDENTS.containsKey(incidentId))
+		{
+			throw new IDNotRecognisedException("Incident ID not found");
+		}
+		Incident inc = INCIDENTS.get(incidentId);
+		String type = inc.getType().name();
+		int severity = inc.getSeverity();
+		int x = inc.getX();
+		int y = inc.getY();
+		String status = inc.getStatus().name();
+
+		String unit;
+		// if no unit assigned, unit string is "-"
+		if (inc.getAssignedUnitId()==-1)
+		{
+			unit = "-";
+		}
+		else
+		{
+			unit = ""+inc.getAssignedUnitId();
+		}
+		return String.format("U#%d TYPE=%s SEV=%d LOC=(%d,%d) STATUS=%s UNIT=%s",incidentId,type,severity,x,y,status,unit);
+    }
+
+    @Override
+    public void dispatch() 
+	{
         // TODO: implement
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
-    public int reportIncident(IncidentType type, int severity, int x, int y) throws InvalidSeverityException, InvalidLocationException {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void cancelIncident(int incidentId) throws IDNotRecognisedException, IllegalStateException {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void escalateIncident(int incidentId, int newSeverity) throws IDNotRecognisedException, InvalidSeverityException, IllegalStateException {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public int[] getIncidentIds() {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public String viewIncident(int incidentId) throws IDNotRecognisedException {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void dispatch() {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void tick() {
+    public void tick() 
+	{
     	MAP.printGrid();
         
         TICK++;
     }
-
+	/*
+	 * TICK=7
+	 * STATIONS=2 UNITS=3 INCIDENTS=2 OBSTACLES=5
+	 * INCIDENTS
+	 * I#1 TYPE=FIRE SEV=4 LOC=(3,1) STATUS=IN_PROGRESS UNIT=2
+	 * I#2 TYPE=CRIME SEV=2 LOC=(0,4) STATUS=REPORTED UNIT=-
+	 * UNITS
+	 * U#1 TYPE=AMBULANCE HOME=1 LOC=(1,1) STATUS=IDLE INCIDENT=-
+	 * U#2 TYPE=FIRE_ENGINE HOME=2 LOC=(3,1) STATUS=AT_SCENE INCIDENT=1 WORK=2
+	 * U#3 TYPE=POLICE_CAR HOME=1 LOC=(1,2) STATUS=EN_ROUTE INCIDENT=2
+	 */
     @Override
     public String getStatus() 
     {
-       String report = "";
-       report+="TICK="+TICK+"\n";
-       return report;
+		String report = String.format("TICK=%d\nSTATIONS=%d UNITS=%d INCIDENTS=%d OBSTACLES=%d\nINCIDENTS\n",TICK,STATIONS.size(),INCIDENTS.size(),OBSTACLES.size());
+		Integer[] incKeyset = INCIDENTS.keySet().toArray(new Integer[0]);
+		for (int i=0; i<incKeyset.length; i++)
+		{
+			int key = incKeyset[i];
+
+		}
+		return report;
     }
     
     // original methods
