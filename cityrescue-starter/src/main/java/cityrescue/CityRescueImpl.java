@@ -126,21 +126,18 @@ public class CityRescueImpl implements CityRescue
     @Override
     public void removeStation(int stationId) throws IDNotRecognisedException, IllegalStateException 
     {
-    	if (STATIONS.containsKey(stationId))
+    	if (!STATIONS.containsKey(stationId))
     	{
-    		Station station = STATIONS.get(stationId);
-    		if (station.getNumUnits()<=0)
-    		{
-    			STATIONS.remove(stationId);
-    		}
-    		else
-    		{
-    			throw new IllegalStateException("Station is not empty");
-    		}
+    		throw new IDNotRecognisedException("Station ID not found");
+    	}
+		Station station = STATIONS.get(stationId);
+    	if (station.getNumUnits()<=0)
+    	{
+    		STATIONS.remove(stationId);
     	}
     	else
     	{
-    		throw new IDNotRecognisedException("Station ID not found");
+    		throw new IllegalStateException("Station is not empty");
     	}
     	
     }
@@ -148,25 +145,22 @@ public class CityRescueImpl implements CityRescue
     @Override
     public void setStationCapacity(int stationId, int maxUnits) throws IDNotRecognisedException, InvalidCapacityException 
     {
-    	if (STATIONS.containsKey(stationId))
+    	if (!STATIONS.containsKey(stationId))
     	{
-    		Station station = STATIONS.get(stationId);
-    		if (maxUnits<0)
-    		{
-    			throw new InvalidCapacityException("Capacity cannot be less than 0");
-    		}
-    		else if (station.getNumUnits()>=maxUnits)
-    		{
-    			throw new IllegalStateException("Capacity cannot be less than currently stored units");
-    		}
-    		else
-    		{
-    			station.setCapacity(maxUnits);
-    		}
+    		throw new IDNotRecognisedException("Station ID not found");
+    	}
+		Station station = STATIONS.get(stationId);
+	   	if (maxUnits<0)
+    	{
+    		throw new InvalidCapacityException("Capacity cannot be less than 0");
+    	}
+    	else if (station.getNumUnits()>=maxUnits)
+    	{
+    		throw new IllegalStateException("Capacity cannot be less than currently stored units");
     	}
     	else
     	{
-    		throw new IDNotRecognisedException("Station ID not found");
+    		station.setCapacity(maxUnits);
     	}
     }
     
@@ -194,7 +188,7 @@ public class CityRescueImpl implements CityRescue
     	{
     		throw new InvalidUnitException("Invalid Unit Type");
     	}
-    	if (STATIONS.containsKey(stationId))
+    	if (!STATIONS.containsKey(stationId))
     	{
     		throw new IDNotRecognisedException("Station ID not found");
     	}
@@ -214,7 +208,7 @@ public class CityRescueImpl implements CityRescue
     @Override
     public void decommissionUnit(int unitId) throws IDNotRecognisedException, IllegalStateException 
     {
-    	if (UNITS.containsKey(unitId))
+    	if (!UNITS.containsKey(unitId))
     	{
     		throw new IDNotRecognisedException("Station ID not found");
     	}
@@ -232,11 +226,11 @@ public class CityRescueImpl implements CityRescue
     public void transferUnit(int unitId, int newStationId) throws IDNotRecognisedException, IllegalStateException 
     {
     	// error if unit or station not found
-    	if (UNITS.containsKey(unitId))
+    	if (!UNITS.containsKey(unitId))
     	{
     		throw new IDNotRecognisedException("Unit ID not found");
     	}
-    	if (STATIONS.containsKey(newStationId))
+    	if (!STATIONS.containsKey(newStationId))
     	{
     		throw new IDNotRecognisedException("Station ID not found");
     	}
@@ -274,7 +268,7 @@ public class CityRescueImpl implements CityRescue
     @Override
     public void setUnitOutOfService(int unitId, boolean outOfService) throws IDNotRecognisedException, IllegalStateException 
     {
-    	if (UNITS.containsKey(unitId))
+    	if (!UNITS.containsKey(unitId))
     	{
     		throw new IDNotRecognisedException("Unit ID not found");
     	}
@@ -319,7 +313,7 @@ public class CityRescueImpl implements CityRescue
     @Override
     public String viewUnit(int unitId) throws IDNotRecognisedException 
     {
-        if (UNITS.containsKey(unitId))
+        if (!UNITS.containsKey(unitId))
 		{
 			throw new IDNotRecognisedException("Unit ID not found");
 		}
@@ -416,7 +410,7 @@ public class CityRescueImpl implements CityRescue
     @Override
     public String viewIncident(int incidentId) throws IDNotRecognisedException 
 	{
-        if (INCIDENTS.containsKey(incidentId))
+        if (!INCIDENTS.containsKey(incidentId))
 		{
 			throw new IDNotRecognisedException("Incident ID not found");
 		}
@@ -437,51 +431,12 @@ public class CityRescueImpl implements CityRescue
 		{
 			unit = ""+inc.getAssignedUnitId();
 		}
-		return String.format("U#%d TYPE=%s SEV=%d LOC=(%d,%d) STATUS=%s UNIT=%s",incidentId,type,severity,x,y,status,unit);
+		return String.format("I#%d TYPE=%s SEV=%d LOC=(%d,%d) STATUS=%s UNIT=%s",incidentId,type,severity,x,y,status,unit);
     }
 
     @Override
     public void dispatch() 
 	{
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void tick() 
-	{
-    public int reportIncident(IncidentType type, int severity, int x, int y) throws InvalidSeverityException, InvalidLocationException {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void cancelIncident(int incidentId) throws IDNotRecognisedException, IllegalStateException {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void escalateIncident(int incidentId, int newSeverity) throws IDNotRecognisedException, InvalidSeverityException, IllegalStateException {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public int[] getIncidentIds() {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public String viewIncident(int incidentId) throws IDNotRecognisedException {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void dispatch() {
-        // TODO: implement
 		Integer[] incidentIds = INCIDENTS.keySet().toArray(new Integer[0]);
 		java.util.Arrays.sort(incidentIds);
 		for (int incidentId : incidentIds)
@@ -542,14 +497,14 @@ public class CityRescueImpl implements CityRescue
 			{
 				unit.setLocation(incident.getX(), incident.getY());
 				unit.arriveAtScene(incident.getSeverity());
-				incident.startWork();
+				incident.setStatus(IncidentStatus.DISPATCHED);
 			}
 			else if(unit.getStatus() == UnitStatus.AT_SCENE)
 			{
 				unit.workTick();
 				if(unit.workFinished())
 				{
-					incident.resolve();
+					incident.setStatus(IncidentStatus.RESOLVED);
 					unit.clearIncident();
 				}
 			}
