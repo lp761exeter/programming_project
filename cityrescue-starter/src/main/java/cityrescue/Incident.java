@@ -23,6 +23,12 @@ public class Incident {
 		this.y = y;
 	}
 
+	public void assignUnit(int unitId)
+	{
+		assignedUnitId = unitId;
+	}
+
+
 	// getters
 
 	public int getIncidentId() 
