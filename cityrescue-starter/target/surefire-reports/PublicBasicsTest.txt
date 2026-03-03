@@ -1,6 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: PublicBasicsTest
 -------------------------------------------------------------------------------
+<<<<<<< HEAD
 Tests run: 3, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.044 s <<< FAILURE! -- in PublicBasicsTest
 PublicBasicsTest.addObstacle_outOfBounds_throws_andStateUnchanged -- Time elapsed: 0.006 s <<< ERROR!
 java.util.MissingFormatArgumentException: Format specifier '%d'
@@ -24,3 +25,6 @@ java.util.MissingFormatArgumentException: Format specifier '%d'
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
+=======
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 s -- in PublicBasicsTest
+>>>>>>> origin/main
