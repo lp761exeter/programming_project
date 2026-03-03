@@ -7,10 +7,10 @@ public abstract class Unit
 	private UnitStatus status = UnitStatus.IDLE;
 	private int stationId;
 	private int unitId;
-	private int x;
-	private int y;
 	private int incidentId;
 	private int workRemaining;
+	private int x;
+	private int y;
 	
 	public Unit(UnitType t, int sId, int uId, int x, int y)
 	{
@@ -21,7 +21,7 @@ public abstract class Unit
 		this.y = y;
 		this.incidentId = -1;
 		this.workRemaining = 0;
-
+		
 	}
 
 	// abstract methods
@@ -122,4 +122,7 @@ public abstract class Unit
 		this.stationId = stationId;
 	}
 }
+
+
+
 
