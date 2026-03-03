@@ -450,6 +450,110 @@ public class CityRescueImpl implements CityRescue
     @Override
     public void tick() 
 	{
+    public int reportIncident(IncidentType type, int severity, int x, int y) throws InvalidSeverityException, InvalidLocationException {
+        // TODO: implement
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void cancelIncident(int incidentId) throws IDNotRecognisedException, IllegalStateException {
+        // TODO: implement
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void escalateIncident(int incidentId, int newSeverity) throws IDNotRecognisedException, InvalidSeverityException, IllegalStateException {
+        // TODO: implement
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public int[] getIncidentIds() {
+        // TODO: implement
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public String viewIncident(int incidentId) throws IDNotRecognisedException {
+        // TODO: implement
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void dispatch() {
+        // TODO: implement
+		Integer[] incidentIds = INCIDENTS.keySet().toArray(new Integer[0]);
+		java.util.Arrays.sort(incidentIds);
+		for (int incidentId : incidentIds)
+		{	
+			Incident incident = INCIDENTS.get(incidentId);
+			if(incident.getStatus() != IncidentStatus.REPORTED)
+			{
+				continue;
+			}
+			Unit bestUnit = null;
+			int bestDistance = Integer.MAX_VALUE;
+			Integer[] unitIds = UNITS.keySet().toArray(new Integer[0]);
+			java.util.Arrays.sort(unitIds);
+
+			for(int unitId : unitIds)
+			{
+				Unit unit = UNITS.get(unitId);
+				if(unit.getStatus() != UnitStatus.IDLE)
+				{
+					continue;
+				}
+				if(!unit.canHandle(incident.getType()))
+				{
+					continue;
+				}
+				
+				int distance = Math.abs(unit.getX() - incident.getX()) + Math.abs(unit.getY() - incident.getY());
+
+				if(bestUnit == null || distance < bestDistance || (distance == bestDistance && unit.getUnitId() < bestUnit.getUnitId()))
+				{
+					bestUnit = unit;
+					bestDistance = distance;
+				}
+			}
+			
+			if(bestUnit != null)
+			{
+				bestUnit.assignIncident(incident.getIncidentId());
+				incident.assignUnit(bestUnit.getUnitId());
+			}
+
+		}
+    }
+
+    @Override
+    public void tick() 
+	{	
+		for(Unit unit : UNITS.values())
+		{
+			int incidentId = unit.getIncidentId();
+
+			if(incidentId == -1)
+			{
+				continue;
+			}
+			Incident incident = INCIDENTS.get(incidentId);
+			if(unit.getStatus() == UnitStatus.EN_ROUTE)
+			{
+				unit.setLocation(incident.getX(), incident.getY());
+				unit.arriveAtScene(incident.getSeverity());
+				incident.startWork();
+			}
+			else if(unit.getStatus() == UnitStatus.AT_SCENE)
+			{
+				unit.workTick();
+				if(unit.workFinished())
+				{
+					incident.resolve();
+					unit.clearIncident();
+				}
+			}
+		}
     	MAP.printGrid();
         
         TICK++;
