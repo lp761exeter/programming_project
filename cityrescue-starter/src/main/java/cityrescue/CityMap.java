@@ -12,14 +12,14 @@ public class CityMap extends CityRescueImpl
 	{
 		width = w;
 		height = h;
-		if (width<0 && height<0)
-        {
-        	throw new InvalidGridException("Width or Height less than 0");
-        }
-        else
-        {
-        	grid = new String[width][height];
-        }
+		grid = new String[width][height];
+		for (int i = 0; i<grid.length; i++)
+		{
+			for (int u = 0; u<grid[0].length; u++)
+			{
+				grid[i][u] = "-";
+			}
+		}
 	}
 	
 	public void printGrid()
@@ -40,17 +40,12 @@ public class CityMap extends CityRescueImpl
 	
 	public void updateGrid()
 	{
-		boolean[][] obstacles = OBSTACLES;
-		for (int i = 0; i<obstacles.length; i++)
+		for (int i = 0; i<OBSTACLES.size(); i++)
 		{
-			for (int u = 0; u<obstacles[i].length; u++)
-			{
-				if (obstacles[i][u]==true)
-				{
-					grid[i][u]="X";
-				}
-				
-			}
+			Obstacle obs = OBSTACLES.get(i);
+			int x = obs.getX();
+			int y = obs.getY();
+			grid[x][y] = "X";
 		}
 		
 	}
@@ -60,28 +55,28 @@ public class CityMap extends CityRescueImpl
 		boolean legal = true;
 		if (direction=='N')
 		{
-			if (y+1>height || grid[y][x]=="block")
+			if (y+1>height || grid[y][x]=="X")
 			{
 				legal = false;
 			}
 		}
 		if (direction=='E')
 		{
-			if (x+1>width || grid[y][x]=="block")
+			if (x+1>width || grid[y][x]=="X")
 			{
 				legal = false;
 			}
 		}
 		if (direction=='S')
 		{
-			if (y-1<0 || grid[y][x]=="block")
+			if (y-1<0 || grid[y][x]=="X")
 			{
 				legal = false;
 			}
 		}
 		if (direction=='W')
 		{
-			if (x-1<0 || grid[y][x]=="block")
+			if (x-1<0 || grid[y][x]=="X")
 			{
 				legal = false;
 			}

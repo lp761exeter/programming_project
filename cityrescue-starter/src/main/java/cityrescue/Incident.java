@@ -6,24 +6,24 @@ public class Incident {
 	
     private IncidentType type;
 	private IncidentStatus status;
+	private int incidentId;
+    private int assignedUnitId;
     private int severity;
 	private int x;
 	private int y;
-	private int incidentId;
-    private int assignedUnitId;
 	
 	public Incident(int incidentId, IncidentType type, int severity, int x, int y)
 	{
-
-        this.incidentId = incidentId;
-        this.type = type;
+		this.type = type;
+		this.status = IncidentStatus.REPORTED;
+		this.incidentId = incidentId;
+		this.assignedUnitId = -1;
+		this.severity = severity;
 		this.x = x;
 		this.y = y;
-		this.assignedUnitId = -1;
-        this.status = IncidentStatus.REPORTED;
-        this.severity = severity;
-
 	}
+
+	// getters
 
 	public int getIncidentId() 
 	{
@@ -59,26 +59,12 @@ public class Incident {
 	{
 		return assignedUnitId;
 	}
+	
+	// setters
 
-	public void assignUnit(int unitId)
+	public void setStatus(IncidentStatus s)
 	{
-		this.assignedUnitId = unitId;
-		this.status = IncidentStatus.DISPATCHED;
-	}
-
-	public void startWork()
-	{
-		this.status = IncidentStatus.IN_PROGRESS;
-	}
-
-	public void resolve()
-	{
-		this.status = IncidentStatus.RESOLVED;
-	}
-
-	public void cancel()
-	{
-		this.status = IncidentStatus.CANCELLED;
+		this.status = s;
 	}
 
 	public void setSeverity(int severity)

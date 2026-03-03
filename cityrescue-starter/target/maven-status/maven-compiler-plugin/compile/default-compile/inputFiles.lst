@@ -3,7 +3,10 @@
 /workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/CityRescue.java
 /workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/CityRescueImpl.java
 /workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/FireEngine.java
+/workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/Incident.java
+/workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/Obstacle.java
 /workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/PoliceCar.java
+/workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/Simulate.java
 /workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/Station.java
 /workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/Unit.java
 /workspaces/programming_project/cityrescue-starter/src/main/java/cityrescue/enums/IncidentStatus.java
