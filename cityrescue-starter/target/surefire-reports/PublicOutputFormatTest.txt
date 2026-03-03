@@ -1,0 +1,41 @@
+-------------------------------------------------------------------------------
+Test set: PublicOutputFormatTest
+-------------------------------------------------------------------------------
+<<<<<<< HEAD
+Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.189 s <<< FAILURE! -- in PublicOutputFormatTest
+PublicOutputFormatTest.getStatus_containsRequiredHeadings -- Time elapsed: 0.092 s <<< ERROR!
+java.util.MissingFormatArgumentException: Format specifier '%d'
+	at java.base/java.util.Formatter.format(Formatter.java:2688)
+	at java.base/java.util.Formatter.format(Formatter.java:2625)
+	at java.base/java.lang.String.format(String.java:4145)
+	at cityrescue.CityRescueImpl.getStatus(CityRescueImpl.java:471)
+	at PublicOutputFormatTest.getStatus_containsRequiredHeadings(PublicOutputFormatTest.java:19)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+PublicOutputFormatTest.viewUnit_and_viewIncident_haveStablePrefixes -- Time elapsed: 0.007 s <<< ERROR!
+=======
+Tests run: 2, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 0.097 s <<< FAILURE! -- in PublicOutputFormatTest
+PublicOutputFormatTest.getStatus_containsRequiredHeadings -- Time elapsed: 0.037 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+	at PublicOutputFormatTest.getStatus_containsRequiredHeadings(PublicOutputFormatTest.java:21)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+PublicOutputFormatTest.viewUnit_and_viewIncident_haveStablePrefixes -- Time elapsed: 0.011 s <<< ERROR!
+>>>>>>> origin/main
+cityrescue.exceptions.IDNotRecognisedException: Station ID not found
+	at cityrescue.CityRescueImpl.addUnit(CityRescueImpl.java:199)
+	at PublicOutputFormatTest.viewUnit_and_viewIncident_haveStablePrefixes(PublicOutputFormatTest.java:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
