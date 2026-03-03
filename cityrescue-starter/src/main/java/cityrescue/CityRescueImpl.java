@@ -468,7 +468,7 @@ public class CityRescueImpl implements CityRescue
     @Override
     public String getStatus() 
     {
-		String report = String.format("TICK=%d\nSTATIONS=%d UNITS=%d INCIDENTS=%d OBSTACLES=%d\nINCIDENTS\n",TICK,STATIONS.size(),INCIDENTS.size(),OBSTACLES.size());
+		String report = String.format("TICK=%d\nSTATIONS=%d UNITS=%d INCIDENTS=%d OBSTACLES=%d\nINCIDENTS\n",TICK,STATIONS.size(),UNITS.size(),INCIDENTS.size(),OBSTACLES.size());
 		Integer[] incKeyset = INCIDENTS.keySet().toArray(new Integer[0]);
 		for (int i=0; i<incKeyset.length; i++)
 		{

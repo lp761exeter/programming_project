@@ -1,3 +1,5 @@
+package cityrescue;
+
 import cityrescue.*;
 import cityrescue.enums.*;
 import cityrescue.exceptions.*;
@@ -11,6 +13,6 @@ public class Simulate
     {
         CityRescue cr = new CityRescueImpl();
         cr.initialise(sizeX,sizeY) ;
-        cr.getStatus();
+        System.out.println(cr.getStatus());
     }
 }
