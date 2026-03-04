@@ -494,7 +494,7 @@ public class CityRescueImpl implements CityRescue
 	 */
     @Override
     public void cancelIncident(int incidentId) throws IDNotRecognisedException, IllegalStateException 
-	{	
+	{
 		//error if incident id not found
 		if (!INCIDENTS.containsKey(incidentId))
 		{
@@ -762,7 +762,7 @@ public class CityRescueImpl implements CityRescue
         // advance simulation time
         TICK++;
     }
-	
+
 	/*
 	 * Generates a summary report of the simulation.
 	 * Including stations, units, incidents and obstacles.
