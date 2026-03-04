@@ -35,6 +35,15 @@ public class OriginalTests
     }
 
     @Test
+    void addStation_capacity_exceeded() throws Exception {
+        for (int i = 1; i <= 20; i++) {
+            cr.addStation("S" + i, i % 5, i / 5);
+        }
+        assertThrows(CapacityExceededException.class, () -> cr.addStation("Overflow", 0, 0));
+        assertEquals(20, cr.getStationIds().length);
+    }
+
+    @Test
     void removeStations_test() throws Exception
     {
     	int id1 = cr.addStation("Central", 1, 1);
@@ -65,6 +74,16 @@ public class OriginalTests
         cr.removeObstacle(0,0);
         // removing even empty location should not throw
         cr.removeObstacle(0,0);
+    }
+
+    @Test
+    void addUnit_capacity_exceeded() throws Exception {
+        int sid = cr.addStation("Base", 0, 0);
+        for (int i = 1; i <= 50; i++) {
+            cr.addUnit(sid, UnitType.AMBULANCE);
+        }
+        assertThrows(CapacityExceededException.class, () -> cr.addUnit(sid, UnitType.AMBULANCE));
+        assertEquals(50, cr.getUnitIds().length);
     }
 
     @Test
@@ -247,6 +266,17 @@ public class OriginalTests
         String status = cr.getStatus();
         assertTrue(status.contains("STATIONS="));
         assertTrue(status.contains("INCIDENTS=2"));
+    }
+
+    @Test
+    void reportIncident_capacity_exceeded() throws Exception {
+        for (int i = 1; i <= 200; i++) {
+            int x = i % 5;
+            int y = (i / 5) % 5;
+            cr.reportIncident(IncidentType.FIRE, 3, x, y);
+        }
+        assertThrows(CapacityExceededException.class, () -> cr.reportIncident(IncidentType.FIRE, 1, 0, 0));
+        assertEquals(200, cr.getIncidentIds().length);
     }
 
     @Test

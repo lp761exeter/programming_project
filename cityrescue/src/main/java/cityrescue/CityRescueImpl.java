@@ -145,6 +145,10 @@ public class CityRescueImpl implements CityRescue
     @Override
     public int addStation(String name, int x, int y) throws InvalidNameException, InvalidLocationException 
     {
+        // enforce maximum number of stations
+        if (STATIONS.size() >= MAX_STATIONS) {
+            throw new CapacityExceededException("Maximum number of stations reached");
+        }
         // check if the station name is empty
         if (name.length()==0)
         {
@@ -251,6 +255,10 @@ public class CityRescueImpl implements CityRescue
     @Override
     public int addUnit(int stationId, UnitType type) throws IDNotRecognisedException, InvalidUnitException, IllegalStateException 
     {	
+		// enforce maximum number of units
+		if (UNITS.size() >= MAX_UNITS) {
+			throw new CapacityExceededException("Maximum number of units reached");
+		}
 		// check if the unit type is null
     	if (type==null)
     	{	
@@ -456,6 +464,10 @@ public class CityRescueImpl implements CityRescue
     @Override
     public int reportIncident(IncidentType type, int severity, int x, int y) throws InvalidSeverityException, InvalidLocationException 
 	{	
+		// enforce maximum number of incidents
+		if (INCIDENTS.size() >= MAX_INCIDENTS) {
+			throw new CapacityExceededException("Maximum number of incidents reached");
+		}
 		// error if the incident type is null
         if (type==null)
 		{
