@@ -20,8 +20,8 @@ public class PoliceCar extends Unit
 	@Override
 	public int getTicksToResolve(int severity) 
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		// police cars take three ticks to resolve any incident
+		return 3;
 	}
 
 }

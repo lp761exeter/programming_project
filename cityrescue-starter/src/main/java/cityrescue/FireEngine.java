@@ -20,8 +20,8 @@ public class FireEngine extends Unit
 	@Override
 	public int getTicksToResolve(int severity) 
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		// fire engines require four ticks regardless of severity
+		return 4;
 	}
 
 }

@@ -3,7 +3,8 @@ package cityrescue;
 import cityrescue.enums.*;
 import cityrescue.exceptions.*;
 
-public interface CityRescue {
+public interface CityRescue 
+{
     void initialise(int width, int height) throws InvalidGridException;
     int[] getGridSize();
 
@@ -32,5 +33,6 @@ public interface CityRescue {
     void tick();
     String getStatus();
     
+    void printMap();
     int getNextStationId();
 }

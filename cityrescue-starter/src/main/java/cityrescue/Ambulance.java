@@ -20,8 +20,8 @@ public class Ambulance extends Unit
 	@Override
 	public int getTicksToResolve(int severity) 
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		// ambulances always take two ticks regardless of severity
+		return 2;
 	}
 
 }

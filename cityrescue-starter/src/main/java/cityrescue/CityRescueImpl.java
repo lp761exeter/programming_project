@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 /*
- * Main executor class that handles the CityRescure simulation
+ * Main executor class that handles all city rescue operations and maintains the global state of the system
  */
 public class CityRescueImpl implements CityRescue 
 {
@@ -59,45 +59,50 @@ public class CityRescueImpl implements CityRescue
     	STATIONS = new HashMap<Integer, Station>();
 		UNITS = new HashMap<Integer, Unit>();
 		INCIDENTS = new HashMap<Integer, Incident>();
-    }
-    
-    /*
-     * Returns an int array with the board width at 0 and the board height at 1
-     */
-    @Override
-    public int[] getGridSize() 
-    {	
-		//retrieve grid dimensions
-    	int width = MAP.getWidth();
-    	int height = MAP.getHeight();
 
-		// return width and height
-    	return new int[]{width,height};
+		// make sure map is cleared
+		refreshMap();
     }
-    
-    /* 
-     * adds an obstacle to the board at (x,y). 
-     * Throws an exception if the location is invalid
-     */
+
+	@Override
+	public int[] getGridSize()
+	{
+		int[] size = new int[2];
+		size[0] = MAP.getWidth();
+		size[1] = MAP.getHeight();
+		return size;
+	}
+
     @Override
     public void addObstacle(int x, int y) throws InvalidLocationException 
     {
-		// check whether the obstacle coordinates are within the map bound
-        if (x<0 || x>MAP.width || y<0 || y>MAP.height)
-        {	
-			// throw exception if the location is out of map bound 
-        	throw new InvalidLocationException("x or y is out bounds");
+        // check whether the obstacle coordinates are within the map bound
+        if (x<0 || x>=MAP.getWidth() || y<0 || y>=MAP.getHeight())
+        {   
+            throw new InvalidLocationException("x or y is out bounds");
         }
-		// create new obstacle object
+        // ensure no station/unit/incident occupies this square
+        for (Station s : STATIONS.values()) {
+            if (s.getX()==x && s.getY()==y) {
+                throw new IllegalStateException("Cannot place obstacle on station");
+            }
+        }
+        for (Unit u : UNITS.values()) {
+            if (u.getX()==x && u.getY()==y) {
+                throw new IllegalStateException("Cannot place obstacle on unit");
+            }
+        }
+        for (Incident inc : INCIDENTS.values()) {
+            if (inc.getX()==x && inc.getY()==y) {
+                throw new IllegalStateException("Cannot place obstacle on incident");
+            }
+        }
+        // create new obstacle object and add
         Obstacle obs = new Obstacle(x,y);
-
-		// add the obstacle into the obstacle list
-		OBSTACLES.add(obs);
-
-		// Update the map grid to reflect the new added obstacle
-		MAP.updateGrid();
+        OBSTACLES.add(obs);
+        // refresh map to show obstacle
+        refreshMap();
     }
-    
     /*
      * removes an obstacle at (x,y). 
      * Throws an exception if the location is invalid. 
@@ -107,7 +112,7 @@ public class CityRescueImpl implements CityRescue
     public void removeObstacle(int x, int y) throws InvalidLocationException 
 	{
 		//error if given coordinates are out of bound
-    	if (x<0 || x>MAP.width || y<0 || y>MAP.height)
+    	if (x<0 || x>=MAP.getWidth() || y<0 || y>=MAP.getHeight())
         {
         	throw new InvalidLocationException("x or y is out bounds");
         }
@@ -123,29 +128,39 @@ public class CityRescueImpl implements CityRescue
     @Override
     public int addStation(String name, int x, int y) throws InvalidNameException, InvalidLocationException 
     {
-		// check if the station name is empty
-    	if (name.length()==0)
-    	{
-			// throw exception if the name is blank
-    		throw new InvalidNameException("Name cannot be blank");
-    	}
+        // check if the station name is empty
+        if (name.length()==0)
+        {
+            // throw exception if the name is blank
+            throw new InvalidNameException("Name cannot be blank");
+        }
 
-		// check whether the station coordinates are within the map bound
-    	if (x<0 || x>MAP.getWidth() || y<0 || y>MAP.getHeight())
-    	{	
-			// if the station location is out of map bound then throw exception
-    		throw new InvalidLocationException("Station out of Bounds");
-    	}
-		// create new station object with a different id
+        // check whether the station coordinates are within the map bound
+        if (x<0 || x>=MAP.getWidth() || y<0 || y>=MAP.getHeight())
+        {    
+            // if the station location is out of map bound then throw exception
+            throw new InvalidLocationException("Station out of Bounds");
+        }
+        // ensure no obstacle already occupies that square
+        for (Obstacle o : OBSTACLES) 
+		{
+            if (o.getX()==x && o.getY()==y) 
+			{
+                throw new InvalidLocationException("Cannot place station on obstacle");
+            }
+        }
+        // create new station object with a different id
         Station station = new Station(name, NEXT_STATION_ID, x,y);
-		// get the station id
+        // get the station id
         int id = station.getStationId();
-		// add the station into the station map
+        // add the station into the station map
         STATIONS.put(id, station);
-		// increment the next available station id
+        // increment the next available station id
         NEXT_STATION_ID++;
         
-		// return the new station id
+        // update map representation
+        refreshMap();
+        // return the new station id
         return id;
     }
     
@@ -257,6 +272,13 @@ public class CityRescueImpl implements CityRescue
 		// get the station coordinates
 		int x = station.getX();
 		int y = station.getY();
+		// cannot create unit on obstacle
+		for (Obstacle o : OBSTACLES) 
+		{
+			if (o.getX() == x && o.getY() == y) {
+				throw new IllegalStateException("Cannot add unit on obstacle");
+			}
+		}
 		// get the station id
 		int stationID = station.getStationId();
 		// create new unit object of the specific type
@@ -267,6 +289,8 @@ public class CityRescueImpl implements CityRescue
 		station.addUnit(unit);
 		// increment the next valid unit id
 		NEXT_UNIT_ID++;
+        // update map so the unit appears
+        refreshMap();
         // return id of the new created unit
         return NEXT_UNIT_ID-1;
     }
@@ -401,23 +425,24 @@ public class CityRescueImpl implements CityRescue
 		{
 			throw new IDNotRecognisedException("Unit ID not found");
 		}
-		//get unit object corresponding to the id
+
 		Unit unit = UNITS.get(unitId);
-		//get unit type
 		String type = unit.getType().name();
-		//get unit'home station id
 		int home = unit.getStationId();
 		// get coordinates of unit's current location
 		int x = unit.getX();
 		int y = unit.getY();
-		//get unit's current status
+
 		String status = unit.getStatus().name();
-		//get the incident id that the unit is handling
-		int incident = unit.getIncidentId();
-		//get the unit's total work
+		String incident = ""+unit.getIncidentId();
+		if (incident.equals("-1"))
+		{
+			incident = "-";
+		}
+
 		int work = unit.getWork();
 		// return formated string that shows the unit's complete information
-		return String.format("U#%d TYPE=%s HOME=%d LOC=(%d,%d) STATUS=%s INCIDENT=%d WORK=%d",unitId,type,home,x,y,status,incident,work);
+		return String.format("U#%d TYPE=%s HOME=%d LOC=(%d,%d) STATUS=%s INCIDENT=%s WORK=%d",unitId,type,home,x,y,status,incident,work);
     }
 	/* 
 	 * Create and record a new incident at specific location with a type and severity
@@ -436,9 +461,15 @@ public class CityRescueImpl implements CityRescue
 			throw new InvalidSeverityException("Severity must be 1 to 5 inclusive");
 		}
 		// error if the location is out of map bound
-		if (x<0 || x>MAP.getWidth() || y<0 || y>MAP.getHeight())
+		if (x<0 || x>=MAP.getWidth() || y<0 || y>=MAP.getHeight())
 		{
 			throw new InvalidLocationException("X and Y cannot be out of bounds");
+		}
+		// cannot report incident on top of obstacle
+		for (Obstacle o : OBSTACLES) {
+			if (o.getX() == x && o.getY() == y) {
+				throw new InvalidLocationException("Cannot report incident on obstacle");
+			}
 		}
 		//create new incident object with a different id
 		Incident inc = new Incident(NEXT_INCIDENT_ID, type, severity, x, y);
@@ -446,6 +477,8 @@ public class CityRescueImpl implements CityRescue
 		INCIDENTS.put(NEXT_INCIDENT_ID, inc);
 		// update next valid incident id
 		NEXT_INCIDENT_ID++;
+		// update map with new incident
+		refreshMap();
 		//return the id of the new created incident
 		return NEXT_INCIDENT_ID-1;
     }
@@ -497,6 +530,11 @@ public class CityRescueImpl implements CityRescue
 		{
 			throw new InvalidSeverityException("Severity must be 1 to 5 inclusive");
 		}
+		// make sure incident exists
+		if (!INCIDENTS.containsKey(incidentId)) 
+		{
+			throw new IDNotRecognisedException("Incident ID not found");
+		}
 		//get incident object corresponding to the id
 		Incident inc = INCIDENTS.get(incidentId);
 		//get current status of incident
@@ -539,11 +577,9 @@ public class CityRescueImpl implements CityRescue
 		{
 			throw new IDNotRecognisedException("Incident ID not found");
 		}
-		// get incident object corresponding to the id
+
 		Incident inc = INCIDENTS.get(incidentId);
-		//get incident type
 		String type = inc.getType().name();
-		//get incident severity
 		int severity = inc.getSeverity();
 		//get incident coordinates
 		int x = inc.getX();
@@ -628,6 +664,7 @@ public class CityRescueImpl implements CityRescue
 
 		}
     }
+	
 	/*
 	 * Advances the simulation by one tick.
 	 * Units move, work on incidents, and incidents can be resolved.
@@ -649,12 +686,61 @@ public class CityRescueImpl implements CityRescue
 
 			Incident incident = INCIDENTS.get(incidentId);
 
-			// move unit to the incident location
+			// move unit towards the incident location if en route
 			if(unit.getStatus() == UnitStatus.EN_ROUTE)
 			{
-				unit.setLocation(incident.getX(), incident.getY());
-				unit.arriveAtScene(incident.getSeverity()); // begin incident work
-				incident.setStatus(IncidentStatus.DISPATCHED);
+				int tx = incident.getX();
+				int ty = incident.getY();
+				int ux = unit.getX();
+				int uy = unit.getY();
+				int currDist = Math.abs(ux - tx) + Math.abs(uy - ty);
+
+				// direction order N,E,S,W 
+                char[] dirs = {'N','E','S','W'};
+                int[] dx = {-1,0,1,0};
+                int[] dy = {0,1,0,-1};
+
+                boolean moved = false;
+                // first pass: look for legal move that reduces Manhattan distance
+                for(int i=0; i<4 && !moved; i++)
+                {
+                    char d = dirs[i];
+                    int nx = ux + dx[i];
+                    int ny = uy + dy[i];
+                    // check if the move is legal; no moving into obstacles or out of bounds
+                    if (!MAP.checkMove(ux, uy, d))
+					{
+						continue;
+					} 
+                    int newDist = Math.abs(nx-tx)+Math.abs(ny-ty);
+                    if(newDist < currDist)
+                    {
+                        unit.setLocation(nx, ny);
+                        moved = true;
+                    }
+                }
+                // second pass: take first legal move in N,E,S,W order
+				if(!moved)
+				{
+					for(int i=0; i<4 && !moved; i++)
+					{
+						char d = dirs[i];
+						int nx = ux + dx[i];
+						int ny = uy + dy[i];
+						if(nx<0||nx>=MAP.getWidth()||ny<0||ny>=MAP.getHeight()) continue;
+						if(!MAP.checkMove(ux, uy, d)) continue;
+						unit.setLocation(nx, ny);
+						moved = true;
+					}
+				}
+
+				// if arrival reached
+				ux = unit.getX(); uy = unit.getY();
+				if(ux==tx && uy==ty)
+				{
+					unit.arriveAtScene(incident.getSeverity()); // begin incident work
+					incident.setStatus(IncidentStatus.DISPATCHED);
+				}
 			}
 			// perform work at incident
 			else if(unit.getStatus() == UnitStatus.AT_SCENE)
@@ -669,12 +755,19 @@ public class CityRescueImpl implements CityRescue
 				}
 			}
 		}
-		// print updated map
-    	MAP.printGrid();
+        // update map (units may have moved)
+        refreshMap();
         // advance simulation time
         TICK++;
     }
 	/*
+	 
+	 */
+
+	/*
+	 * Generates a summary report of the simulation.
+	 * Including stations, units, incidents and obstacles.
+	 * Format example:
 	 * TICK=7
 	 * STATIONS=2 UNITS=3 INCIDENTS=2 OBSTACLES=5
 	 * INCIDENTS
@@ -684,11 +777,6 @@ public class CityRescueImpl implements CityRescue
 	 * U#1 TYPE=AMBULANCE HOME=1 LOC=(1,1) STATUS=IDLE INCIDENT=-
 	 * U#2 TYPE=FIRE_ENGINE HOME=2 LOC=(3,1) STATUS=AT_SCENE INCIDENT=1 WORK=2
 	 * U#3 TYPE=POLICE_CAR HOME=1 LOC=(1,2) STATUS=EN_ROUTE INCIDENT=2
-	 */
-
-	/*
-	 * Generates a summary report of the simulation.
-	 * Including stations, units, incidents and obstacles.
 	 */
 	@Override
     public String getStatus()
@@ -726,6 +814,20 @@ public class CityRescueImpl implements CityRescue
 		// take off the last newline character
 		return report.substring(0,report.length()-1);
     }
+
+	// keep the map representation in sync with the current model state
+	private void refreshMap()
+	{
+		if (MAP != null) {
+			MAP.updateGrid(OBSTACLES, STATIONS, UNITS, INCIDENTS);
+		}
+	}
+
+	@Override
+	public void printMap()
+	{
+		MAP.printGrid();
+	}
     
     // getters and setters
     
