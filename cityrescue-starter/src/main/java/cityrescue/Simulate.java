@@ -13,7 +13,7 @@ public class Simulate
     public static int units = 5;
     public static int incidents = 1;
     public static int obstacles = 5;
-    public static int maxTicks = 50;
+    public static int maxTicks = 10;
     public static CityRescue cr;
 
     public static void main(String[] args) throws InvalidGridException, InvalidCapacityException, InvalidNameException, InvalidSeverityException, IDNotRecognisedException, InvalidLocationException, InvalidUnitException, IllegalStateException

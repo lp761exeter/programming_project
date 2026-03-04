@@ -28,7 +28,11 @@ public class Incident {
 		assignedUnitId = unitId;
 	}
 
-
+	public void clearUnit()
+	{
+		assignedUnitId = -1;
+		setStatus(IncidentStatus.REPORTED);
+	}
 	// getters
 
 	public int getIncidentId() 

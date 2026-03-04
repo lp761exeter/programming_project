@@ -100,12 +100,14 @@ public class CityMap
     {
         int nx = x;
         int ny = y;
+        // orientation must match CityRescueImpl.tick():
+        // N decrements x, E increments y, S increments x, W decrements y
         switch(direction) 
 		{
-            case 'N': ny = y+1; break;
-            case 'E': nx = x+1; break;
-            case 'S': ny = y-1; break;
-            case 'W': nx = x-1; break;
+            case 'N': nx = x-1; break;
+            case 'E': ny = y+1; break;
+            case 'S': nx = x+1; break;
+            case 'W': ny = y-1; break;
             default: return false;
         }
         // boundary check

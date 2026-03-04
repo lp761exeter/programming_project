@@ -64,6 +64,9 @@ public class CityRescueImpl implements CityRescue
 		refreshMap();
     }
 
+	/*
+	 * Returns the size of the grid as an array of two integers [width, height]
+	 */
 	@Override
 	public int[] getGridSize()
 	{
@@ -73,6 +76,10 @@ public class CityRescueImpl implements CityRescue
 		return size;
 	}
 
+	/*
+	 * Adds an obstacle to the CityMap at (x,y).
+	 * Throws an exception if the location is invalid or occupied by a station/unit/incident
+	 */
     @Override
     public void addObstacle(int x, int y) throws InvalidLocationException 
     {
@@ -84,17 +91,17 @@ public class CityRescueImpl implements CityRescue
         // ensure no station/unit/incident occupies this square
         for (Station s : STATIONS.values()) {
             if (s.getX()==x && s.getY()==y) {
-                throw new IllegalStateException("Cannot place obstacle on station");
+                throw new InvalidLocationException("Cannot place obstacle on station");
             }
         }
         for (Unit u : UNITS.values()) {
             if (u.getX()==x && u.getY()==y) {
-                throw new IllegalStateException("Cannot place obstacle on unit");
+                throw new InvalidLocationException("Cannot place obstacle on unit");
             }
         }
         for (Incident inc : INCIDENTS.values()) {
             if (inc.getX()==x && inc.getY()==y) {
-                throw new IllegalStateException("Cannot place obstacle on incident");
+                throw new InvalidLocationException("Cannot place obstacle on incident");
             }
         }
         // create new obstacle object and add
@@ -103,6 +110,7 @@ public class CityRescueImpl implements CityRescue
         // refresh map to show obstacle
         refreshMap();
     }
+
     /*
      * removes an obstacle at (x,y). 
      * Throws an exception if the location is invalid. 
@@ -111,12 +119,21 @@ public class CityRescueImpl implements CityRescue
     @Override
     public void removeObstacle(int x, int y) throws InvalidLocationException 
 	{
-		//error if given coordinates are out of bound
+		// error if given coordinates are out of bound
     	if (x<0 || x>=MAP.getWidth() || y<0 || y>=MAP.getHeight())
         {
         	throw new InvalidLocationException("x or y is out bounds");
         }
-        
+        // if there is an obstacle at the location, remove the first one found
+        for (int i = 0; i < OBSTACLES.size(); i++) {
+            Obstacle o = OBSTACLES.get(i);
+            if (o.getX() == x && o.getY() == y) {
+                OBSTACLES.remove(i);
+                break;
+            }
+        }
+        // refresh map so any removed obstacle disappears
+        refreshMap();
     }
     
     /*
@@ -131,14 +148,11 @@ public class CityRescueImpl implements CityRescue
         // check if the station name is empty
         if (name.length()==0)
         {
-            // throw exception if the name is blank
             throw new InvalidNameException("Name cannot be blank");
         }
-
         // check whether the station coordinates are within the map bound
         if (x<0 || x>=MAP.getWidth() || y<0 || y>=MAP.getHeight())
         {    
-            // if the station location is out of map bound then throw exception
             throw new InvalidLocationException("Station out of Bounds");
         }
         // ensure no obstacle already occupies that square
@@ -149,18 +163,14 @@ public class CityRescueImpl implements CityRescue
                 throw new InvalidLocationException("Cannot place station on obstacle");
             }
         }
-        // create new station object with a different id
         Station station = new Station(name, NEXT_STATION_ID, x,y);
-        // get the station id
         int id = station.getStationId();
-        // add the station into the station map
         STATIONS.put(id, station);
-        // increment the next available station id
         NEXT_STATION_ID++;
         
         // update map representation
         refreshMap();
-        // return the new station id
+
         return id;
     }
     
@@ -174,24 +184,17 @@ public class CityRescueImpl implements CityRescue
 		// check whether the station id exists in the station map
     	if (!STATIONS.containsKey(stationId))
     	{	
-			// if not found then throw exception
     		throw new IDNotRecognisedException("Station ID not found");
     	}
-		// get station object corresponding to the id
-		Station station = STATIONS.get(stationId);
 
+		Station station = STATIONS.get(stationId);
 		// check if the station is empty
-    	if (station.getNumUnits()<=0)
+    	if (station.getNumUnits()>0)
     	{	
-			// if empty, then remove the station from the map
-    		STATIONS.remove(stationId);
+			throw new IllegalStateException("Station is not empty");
     	}
-    	else
-    	{
-			//if the station is not empty, throw IllegalStateException
-    		throw new IllegalStateException("Station is not empty");
-    	}
-    	
+
+    	STATIONS.remove(stationId);
     }
 	/*
 	 * Set the maximum number of units a station can hold
@@ -203,28 +206,22 @@ public class CityRescueImpl implements CityRescue
 		//check if the station id exists in the station map
     	if (!STATIONS.containsKey(stationId))
     	{	
-			//if not, throw IDNotRecognisedException
     		throw new IDNotRecognisedException("Station ID not found");
     	}
-		// get the station object corresponding to the id
-		Station station = STATIONS.get(stationId);
 
+		Station station = STATIONS.get(stationId);
 		// check whether the new capacity is valid, it cannot be less than 0
 	   	if (maxUnits<0)
     	{	
-			// throw InvalidCapacityException if it less than 0
     		throw new InvalidCapacityException("Capacity cannot be less than 0");
     	}
 		// check if the new capacity is less than current stored units
-    	else if (station.getNumUnits()>=maxUnits)
+    	if (maxUnits<station.getNumUnits())
     	{	
-			//throw IllegalStateException if capacity cannot the existing units
-    		throw new IllegalStateException("Capacity cannot be less than currently stored units");
+    		throw new InvalidCapacityException("Capacity cannot be less than currently stored units");
     	}
-    	else
-    	{	// set new capacity for station
-    		station.setCapacity(maxUnits);
-    	}
+    	
+    	station.setCapacity(maxUnits);
     }
     
     /*
@@ -237,7 +234,6 @@ public class CityRescueImpl implements CityRescue
     	Integer[] temp = STATIONS.keySet().toArray(new Integer[0]);
 		//create a corresponding primitive int array
     	int[] IDs = new int[temp.length];
-    	
 		// convert each integer into int
     	for (int i = 0; i < temp.length; i++) 
     	{
@@ -246,6 +242,7 @@ public class CityRescueImpl implements CityRescue
     	//return the arrays of station ids
         return IDs;
     }
+
 	/*
 	 * Create a new emergency unit of the given type
 	 * Assign it to the specified station
@@ -257,16 +254,14 @@ public class CityRescueImpl implements CityRescue
 		// check if the unit type is null
     	if (type==null)
     	{	
-			// throw exception if the unit type is invalid
     		throw new InvalidUnitException("Invalid Unit Type");
     	}
 		// check if the station id exists in the station map
     	if (!STATIONS.containsKey(stationId))
     	{	
-			// if station id is not found, throw IDNotRecognisedException
     		throw new IDNotRecognisedException("Station ID not found");
     	}
-    	// get the station object corresponding to the id
+
     	Station station = STATIONS.get(stationId);
 
 		// get the station coordinates
@@ -279,47 +274,57 @@ public class CityRescueImpl implements CityRescue
 				throw new IllegalStateException("Cannot add unit on obstacle");
 			}
 		}
-		// get the station id
+
 		int stationID = station.getStationId();
-		// create new unit object of the specific type
 		Unit unit = type.create(type, stationID, NEXT_UNIT_ID, x, y);
-		// add the unit into the global unit map
 		UNITS.put(NEXT_UNIT_ID, unit);
-		// add the unit to the station
 		station.addUnit(unit);
-		// increment the next valid unit id
 		NEXT_UNIT_ID++;
-        // update map so the unit appears
+        
+		// update map so the unit appears
         refreshMap();
-        // return id of the new created unit
+
         return NEXT_UNIT_ID-1;
     }
+
 	/*
 	 * Remove a unit from the system
 	 * A unit cannot be decommissioned when responding or working in an incident
-	 *
 	 */
     @Override
     public void decommissionUnit(int unitId) throws IDNotRecognisedException, IllegalStateException 
     {	
 		// check if the unit id exists in the global unit map 
     	if (!UNITS.containsKey(unitId))
-    	{	
-			// if unit id is not found then throw IDNotRecognisedException
-    		throw new IDNotRecognisedException("Station ID not found");
+    	{
+    		throw new IDNotRecognisedException("Unit ID not found");
     	}
-		//get the unit object corresponding to the id
+
     	Unit unit = UNITS.get(unitId);
-		//get the current status of the unit
     	UnitStatus status = unit.getStatus();
 		//if the unit is en-route or at scene, it cannot be decommission 
     	if (status==UnitStatus.EN_ROUTE || status==UnitStatus.AT_SCENE)
-    	{	// if the unit is currently operating, throw IllegalStateException
+    	{
     		throw new IllegalStateException("Cannot decomission unit while operating");
     	}
-    	// remove the unit from the global unit map
+
     	UNITS.remove(unitId);
+
+		// also need to remove the unit from its station
+		int stationId = unit.getStationId();
+		Station station = STATIONS.get(stationId);
+		station.removeUnit(unitId);
+		// if the unit is assigned to an incident, clear the assignment
+		int incidentId = unit.getIncidentId();
+		if (incidentId != -1)
+		{
+			Incident incident = INCIDENTS.get(incidentId);
+			incident.clearUnit();
+		}
+
+		refreshMap();
     }
+
 	/*
 	 * Transfer a idle unit from its current station to another station
 	 * The station of destination must have available capacity
@@ -336,7 +341,7 @@ public class CityRescueImpl implements CityRescue
     	{
     		throw new IDNotRecognisedException("Station ID not found");
     	}
-    	// get the unit and the new station objects
+    	
     	Unit unit = UNITS.get(unitId);
     	Station newStation = STATIONS.get(newStationId);
     	
@@ -349,6 +354,7 @@ public class CityRescueImpl implements CityRescue
     	{
     		throw new IllegalStateException("Station is full");
     	}
+
     	// get the old station and remove the unit from it 
     	Station oldStation = STATIONS.get(unit.getStationId());
     	oldStation.removeUnit(unitId);
@@ -363,37 +369,36 @@ public class CityRescueImpl implements CityRescue
     }
     
     /*
-     * the specification for this method is very bad.
+     * the specification for this method is unclear
      * i assume they want that if the bool is true, the unit must be idle to be set OUT_OF_SERVICE, and if it's not IDLE the method does nothing.
      * if the bool is false, the unit is set OUT_OF_SERVICE no matter what
      */
     @Override
     public void setUnitOutOfService(int unitId, boolean outOfService) throws IDNotRecognisedException, IllegalStateException 
-    {	//error if unit id not found
+    {	
+		//error if unit id not found
     	if (!UNITS.containsKey(unitId))
     	{
     		throw new IDNotRecognisedException("Unit ID not found");
     	}
     	
     	Unit unit = UNITS.get(unitId);
+		// if the outOfService flag is true, only IDLE units can be set to OUT_OF_SERVICE
     	if (outOfService)
     	{	
-			// if we want to set the unit as out of service
-    		if (unit.getStatus()==UnitStatus.IDLE)
+    		if (unit.getStatus()!=UnitStatus.IDLE)
     		{	
-				//only IDLE units can be set to OUT_OF_SERVICE
-    			unit.setStatus(UnitStatus.OUT_OF_SERVICE);
-    		}
-    		else
-    		{	// throw new IllegalStateException if unit is not IDLE
     			throw new IllegalStateException("Unit must be IDLE to be set to OUT_OF_SERVICE");
     		}
+			unit.setStatus(UnitStatus.OUT_OF_SERVICE);
     	}
+		// if the outOfService flag is false, the unit is set to OUT_OF_SERVICE regardless of its current status
     	else
-    	{	// if setting back to service, set status to OUT_OF_SERVICE
+    	{	
     		unit.setStatus(UnitStatus.OUT_OF_SERVICE);
     	}
     }
+
 	/*
 	 * Return the ids of all units currently registered in the system
 	 */
@@ -444,6 +449,7 @@ public class CityRescueImpl implements CityRescue
 		// return formated string that shows the unit's complete information
 		return String.format("U#%d TYPE=%s HOME=%d LOC=(%d,%d) STATUS=%s INCIDENT=%s WORK=%d",unitId,type,home,x,y,status,incident,work);
     }
+
 	/* 
 	 * Create and record a new incident at specific location with a type and severity
 	 */
@@ -471,17 +477,17 @@ public class CityRescueImpl implements CityRescue
 				throw new InvalidLocationException("Cannot report incident on obstacle");
 			}
 		}
-		//create new incident object with a different id
+		
 		Incident inc = new Incident(NEXT_INCIDENT_ID, type, severity, x, y);
-		// add the incident to the global incidents map
 		INCIDENTS.put(NEXT_INCIDENT_ID, inc);
-		// update next valid incident id
 		NEXT_INCIDENT_ID++;
+
 		// update map with new incident
 		refreshMap();
-		//return the id of the new created incident
+		
 		return NEXT_INCIDENT_ID-1;
     }
+
 	/*
 	 * Cancel an incident if it has not been resolved
 	 * Any assigned unit will be released from the incident
@@ -494,32 +500,27 @@ public class CityRescueImpl implements CityRescue
 		{
 			throw new IDNotRecognisedException("ID not found in INCIDENTS");
 		}
-		//get incident object corresponding to the id
+
         Incident inc = INCIDENTS.get(incidentId);
-		// if the incident status is reported, set the incident status to cancelled
-		if (inc.getStatus()==IncidentStatus.REPORTED)
-		{
-			inc.setStatus(IncidentStatus.CANCELLED);
-		}
-		// if incident status is dispatched
-		else if (inc.getStatus()==IncidentStatus.DISPATCHED)
+		switch (inc.getStatus())
 		{	
-			// get assigned unit id
-			int unitId = inc.getAssignedUnitId();
-			// get unit object
-			Unit unit = UNITS.get(unitId);
-			//clear the incident assignment from the unit
-			unit.clearIncident();
-			// set the status to cancelled
-			inc.setStatus(IncidentStatus.CANCELLED);
+			case REPORTED:
+				inc.setStatus(IncidentStatus.CANCELLED);
+				break;
+			case DISPATCHED:
+				int unitId = inc.getAssignedUnitId();
+				Unit unit = UNITS.get(unitId);
+				unit.clearIncident();
+				inc.setStatus(IncidentStatus.CANCELLED);
+				inc.assignUnit(-1);
+				break;
+			default:
+				throw new IllegalStateException("Incident status must be REPORTED or DISPATCHED to cancel");
 		}
-		else//error if incident cannot be cancelled
-		{
-			throw new IllegalStateException("Incident must be REPORTED or DISPATCHED to cancel");
-		}
-    }
+	}
+
 	/*
-	 * Update the serverity level of an active incident
+	 * Update the severity level of an active incident
 	 * Resolve or cancel incidents that cannot be escalated
 	 */
     @Override
@@ -535,18 +536,18 @@ public class CityRescueImpl implements CityRescue
 		{
 			throw new IDNotRecognisedException("Incident ID not found");
 		}
-		//get incident object corresponding to the id
+
 		Incident inc = INCIDENTS.get(incidentId);
-		//get current status of incident
 		IncidentStatus status = inc.getStatus();
 		// Incident cannot be RESOLVED or CANCELLED when escalating
 		if (status==IncidentStatus.RESOLVED || status==IncidentStatus.CANCELLED)
-		{	// error if RESOLVED or CANCELLED
+		{
 			throw new IllegalStateException("Incident cannot be RESOLVED or CANCELLED when escalating");
 		}
-		//set incident's severity to new level
+
 		inc.setSeverity(newSeverity);
     }
+
 	/*
 	 * Return the ids of all incidents currently stored in the system
 	 */
@@ -563,10 +564,13 @@ public class CityRescueImpl implements CityRescue
     	{
     	    IDs[i] = temp[i];
     	}
-    	//return the arraay of incident ids
+    	
         return IDs;
     }
+
 	/*
+	 * prints a string that describes the incident
+	 * format example:
 	 * I#1 TYPE=FIRE SEV=4 LOC=(3,1) STATUS=IN_PROGRESS UNIT=2
 	 */
     @Override
@@ -600,6 +604,7 @@ public class CityRescueImpl implements CityRescue
 		//return formatted string, show complete information
 		return String.format("I#%d TYPE=%s SEV=%d LOC=(%d,%d) STATUS=%s UNIT=%s",incidentId,type,severity,x,y,status,unit);
     }
+
 	/*
 	 * Assings avalible idle units to reported incidents.
 	 * The closest compatible unit is selected for each incident.
@@ -615,14 +620,16 @@ public class CityRescueImpl implements CityRescue
 		for (int incidentId : incidentIds)
 		{	
 			Incident incident = INCIDENTS.get(incidentId);
-			// only the new reported incidents can receive units
+
+			// if the incident is not in REPORTED status, it has a unit already assigned or is resolved/cancelled, so skip it
 			if(incident.getStatus() != IncidentStatus.REPORTED)
 			{
 				continue;
 			}
+
 			Unit bestUnit = null;
 
-			// initialized to the max value
+			// set to max_value temporarily
 			int bestDistance = Integer.MAX_VALUE;
 
 			// obtain all unit ids and order them
@@ -630,26 +637,21 @@ public class CityRescueImpl implements CityRescue
 			java.util.Arrays.sort(unitIds);
 
 			// search through all registered units
-			for(int unitId : unitIds)
+			for (int unitId : unitIds)
 			{
 				Unit unit = UNITS.get(unitId);
 				
-				// skip the unit that are not idle
-				if(unit.getStatus() != UnitStatus.IDLE)
+				// skip the unit that are not IDLE or cannot handle this incident type
+				if(unit.getStatus() != UnitStatus.IDLE || !unit.canHandle(incident.getType()))
 				{
 					continue;
 				}
 
-				// skip units that cannot handle this incident type
-				if(!unit.canHandle(incident.getType()))
-				{
-					continue;
-				}
 				// use Shortest Manhattan distance (|𝑥 − 𝑥 | + |𝑦− 𝑦|) given in the instruction
 				int distance = Math.abs(unit.getX() - incident.getX()) + Math.abs(unit.getY() - incident.getY());
 
 				// if the distance is same then choose the unit that has smallar id
-				if(bestUnit == null || distance < bestDistance || (distance == bestDistance && unit.getUnitId() < bestUnit.getUnitId()))
+				if (bestUnit == null || distance < bestDistance || (distance == bestDistance && unit.getUnitId() < bestUnit.getUnitId()))
 				{
 					bestUnit = unit;
 					bestDistance = distance;
@@ -660,11 +662,12 @@ public class CityRescueImpl implements CityRescue
 			{
 				bestUnit.assignIncident(incident.getIncidentId());
 				incident.assignUnit(bestUnit.getUnitId());
+				// mark the incident as dispatched immediately so it can't be re-dispatched
+				incident.setStatus(IncidentStatus.DISPATCHED);
 			}
-
 		}
-    }
-	
+	}
+
 	/*
 	 * Advances the simulation by one tick.
 	 * Units move, work on incidents, and incidents can be resolved.
@@ -675,7 +678,6 @@ public class CityRescueImpl implements CityRescue
 		// iterate through every registered unit in the system
 		for(Unit unit : UNITS.values())
 		{	
-			// obtain the incident assigned to the unit
 			int incidentId = unit.getIncidentId();
 
 			// skip units without incidents
@@ -719,12 +721,12 @@ public class CityRescueImpl implements CityRescue
                         moved = true;
                     }
                 }
-                // second pass: take first legal move in N,E,S,W order
-				if(!moved)
+			// second pass: take first legal move in N,E,S,W order
+			if(!moved)
+			{
+				for(int i=0; i<4 && !moved; i++)
 				{
-					for(int i=0; i<4 && !moved; i++)
-					{
-						char d = dirs[i];
+					char d = dirs[i];
 						int nx = ux + dx[i];
 						int ny = uy + dy[i];
 						if(nx<0||nx>=MAP.getWidth()||ny<0||ny>=MAP.getHeight()) continue;
@@ -760,10 +762,7 @@ public class CityRescueImpl implements CityRescue
         // advance simulation time
         TICK++;
     }
-	/*
-	 
-	 */
-
+	
 	/*
 	 * Generates a summary report of the simulation.
 	 * Including stations, units, incidents and obstacles.

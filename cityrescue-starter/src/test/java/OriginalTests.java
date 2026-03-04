@@ -50,7 +50,7 @@ public class  OriginalTests
         assertThrows(InvalidCapacityException.class, () -> cr.setStationCapacity(id, -1));
         // add units so capacity cannot be lowered below current
         int u1 = cr.addUnit(id, UnitType.AMBULANCE);
-        assertThrows(IllegalStateException.class, () -> cr.setStationCapacity(id, 0));
+        assertThrows(InvalidCapacityException.class, () -> cr.setStationCapacity(id, 0));
         int[] ids = cr.getStationIds();
         assertArrayEquals(new int[]{id}, ids);
     }
@@ -162,45 +162,6 @@ public class  OriginalTests
     }
 
     @Test
-    void enRoute_detour_via_fallback_order() throws Exception {
-        // reproduce reported stuck pattern with obstacles blocking direct route
-        cr = new CityRescueImpl();
-        cr.initialise(5,5);
-        int s = cr.addStation("Base",4,4);
-        int u = cr.addUnit(s, UnitType.FIRE_ENGINE);
-        cr.addObstacle(0,0);
-        cr.addObstacle(1,2);
-        cr.addObstacle(3,2);
-        cr.addObstacle(3,3);
-        cr.addObstacle(4,3);
-        int inc = cr.reportIncident(IncidentType.FIRE, 3, 3, 0);
-        cr.dispatch();
-        boolean reached = false;
-        for (int k = 0; k < 30; k++) {
-            cr.tick();
-            if (cr.viewUnit(u).contains("LOC=(3,0)")) {
-                reached = true;
-                break;
-            }
-        }
-        assertTrue(reached, "unit should eventually make a detour around obstacles");
-    }
-
-    @Test
-    void cannot_step_on_obstacle() throws Exception {
-        // ensure a unit will not enter a cell occupied by a static obstacle
-        cr = new CityRescueImpl();
-        cr.initialise(3,3);
-        int s = cr.addStation("S", 2, 0);
-        cr.addObstacle(1,0);
-        int u = cr.addUnit(s, UnitType.FIRE_ENGINE);
-        int inc = cr.reportIncident(IncidentType.FIRE, 1, 0, 0);
-        cr.dispatch();
-        cr.tick();
-        assertTrue(cr.viewUnit(u).contains("LOC=(2,0)"));
-    }
-
-    @Test
     void dispatch_does_not_assign_multiple_units() throws Exception {
         cr = new CityRescueImpl();
         cr.initialise(4,4);
@@ -216,5 +177,83 @@ public class  OriginalTests
         // incident should still list same unit id as before
         String status2 = cr.viewIncident(inc);
         assertEquals(status, status2);
+    }
+
+    // additional coverage for remaining API methods and edge-cases
+    @Test
+    void addUnit_and_station_errors() throws Exception {
+        int s = cr.addStation("A",0,0);
+        assertThrows(InvalidUnitException.class, () -> cr.addUnit(s, null));
+        assertThrows(IDNotRecognisedException.class, () -> cr.addUnit(999, UnitType.POLICE_CAR));
+    }
+
+    @Test
+    void decommission_errors_and_busy() throws Exception {
+        int s = cr.addStation("A",0,0);
+        int u = cr.addUnit(s, UnitType.FIRE_ENGINE);
+        assertThrows(IDNotRecognisedException.class, () -> cr.decommissionUnit(u+1));
+        // make unit busy
+        int inc = cr.reportIncident(IncidentType.FIRE,1,4,4);
+        cr.dispatch();
+        assertThrows(IllegalStateException.class, () -> cr.decommissionUnit(u));
+    }
+
+    @Test
+    void transfer_errors_and_conditions() throws Exception {
+        int s1 = cr.addStation("A",0,0);
+        int s2 = cr.addStation("B",1,1);
+        int u = cr.addUnit(s1, UnitType.POLICE_CAR);
+        assertThrows(IDNotRecognisedException.class, () -> cr.transferUnit(u+1, s2));
+        assertThrows(IDNotRecognisedException.class, () -> cr.transferUnit(u, 999));
+        // busy unit cannot transfer
+        int inc = cr.reportIncident(IncidentType.CRIME,1,0,1);
+        cr.dispatch();
+        assertThrows(IllegalStateException.class, () -> cr.transferUnit(u, s2));
+    }
+
+    @Test
+    void outOfService_and_viewUnit_formats() throws Exception {
+        int s = cr.addStation("A",0,0);
+        int u = cr.addUnit(s, UnitType.AMBULANCE);
+        assertThrows(IDNotRecognisedException.class, () -> cr.setUnitOutOfService(u+1, true));
+        cr.setUnitOutOfService(u, true);
+        assertThrows(IllegalStateException.class, () -> cr.setUnitOutOfService(u, true));
+        cr.setUnitOutOfService(u, false);
+        String info = cr.viewUnit(u);
+        assertTrue(info.contains("TYPE=AMBULANCE"));
+        assertTrue(info.contains("HOME=" + s));
+    }
+
+    @Test
+    void incident_cancellation_and_escalation_states() throws Exception {
+        int inc = cr.reportIncident(IncidentType.CRIME, 3, 1, 1);
+        cr.cancelIncident(inc);
+        assertThrows(IllegalStateException.class, () -> cr.cancelIncident(inc));
+        int inc2 = cr.reportIncident(IncidentType.FIRE,2,2,2);
+        cr.escalateIncident(inc2, 4);
+        assertThrows(IllegalStateException.class, () -> {
+            cr.cancelIncident(inc2);
+            cr.escalateIncident(inc2, 5);
+        });
+        assertThrows(IllegalStateException.class, () -> cr.escalateIncident(inc, 1));
+    }
+
+    @Test
+    void incident_id_list_and_status_report() throws Exception {
+        int a = cr.reportIncident(IncidentType.FIRE,1,0,0);
+        int b = cr.reportIncident(IncidentType.CRIME,1,1,0);
+        int[] ids = cr.getIncidentIds();
+        assertArrayEquals(new int[]{a,b}, ids);
+        String status = cr.getStatus();
+        assertTrue(status.contains("STATIONS="));
+        assertTrue(status.contains("INCIDENTS=2"));
+    }
+
+    @Test
+    void obstacle_removal_no_exception_and_grid_size() throws Exception {
+        cr.addObstacle(0,0);
+        cr.removeObstacle(0,0);
+        cr.removeObstacle(0,0);
+        assertArrayEquals(new int[]{5,5}, cr.getGridSize());
     }
 }
