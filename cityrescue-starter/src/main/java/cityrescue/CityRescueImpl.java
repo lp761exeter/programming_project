@@ -178,8 +178,9 @@ public class CityRescueImpl implements CityRescue
     	}
     	
     }
-	/*Set the maximum number of units a station can hold
-	 *Capacity cannot be negative or less than the number of units currently stored in the station
+	/*
+	 * Set the maximum number of units a station can hold
+	 * Capacity cannot be negative or less than the number of units currently stored in the station
 	 */
     @Override
     public void setStationCapacity(int stationId, int maxUnits) throws IDNotRecognisedException, InvalidCapacityException 
@@ -689,39 +690,41 @@ public class CityRescueImpl implements CityRescue
 	 * Generates a summary report of the simulation.
 	 * Including stations, units, incidents and obstacles.
 	 */
-    @Override
-    public String getStatus() 
-    {	//create initial report string
+	@Override
+    public String getStatus()
+    {
 		String report = String.format("TICK=%d\nSTATIONS=%d UNITS=%d INCIDENTS=%d OBSTACLES=%d\nINCIDENTS\n",TICK,STATIONS.size(),UNITS.size(),INCIDENTS.size(),OBSTACLES.size());
-		//get all incident ids
 		Integer[] incKeyset = INCIDENTS.keySet().toArray(new Integer[0]);
 		for (int i=0; i<incKeyset.length; i++)
 		{
 			int key = incKeyset[i];
-
+			try 
+			{
+				report+=viewIncident(INCIDENTS.get(key).getIncidentId())+"\n";
+			}
+			catch (Exception IDNotRecognisedException)
+			{
+				System.out.println("ID not recoginised");
+			}
+			
 		}
-		// return the report string
-		return report;
-    }
-    
-    // original methods
-    /*
-	 * Print information about all stations that currently active in the simulation
-	 */
-    @Override
-    public void printStations()
-    {	
-		//for each station 
-    	for (int i = 0; i<STATIONS.size(); i++)
-    	{	
-			//get the station object by i
-    		Station station = STATIONS.get(i);
-			// print information if the station is not null
-    		if (station!=null)
-    		{
-    			System.out.println(station);
-    		}
-    	}
+
+		report+="UNITS\n";
+		Integer[] unitKeyset = UNITS.keySet().toArray(new Integer[0]);
+		for (int i=0; i<unitKeyset.length; i++)
+		{
+			int key = unitKeyset[i];
+			try 
+			{
+				report+=viewUnit(UNITS.get(key).getUnitId())+"\n";
+			}
+			catch (Exception IDNotRecognisedException)
+			{
+				System.out.println("ID not recoginised");
+			}
+		}
+		// take off the last newline character
+		return report.substring(0,report.length()-1);
     }
     
     // getters and setters

@@ -32,6 +32,5 @@ public interface CityRescue {
     void tick();
     String getStatus();
     
-    void printStations();
     int getNextStationId();
 }
